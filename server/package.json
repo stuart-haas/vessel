@@ -1,0 +1,26 @@
+{
+  "name": "docker-test",
+  "version": "1.0.0",
+  "description": "Docker test",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.3",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsc-watch": "^7.1.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "axios": "^1.10.0",
+    "express": "^5.1.0",
+    "redis": "^4.7.1",
+    "socket.io": "^4.8.1"
+  }
+}
