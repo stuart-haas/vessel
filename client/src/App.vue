@@ -64,7 +64,7 @@ onMounted(async () => {
         <Select v-if="bibleVersions && bibleVersions.length" v-model="selectedBible" :options="bibleVersions" :optionLabel="(item) => item.name + ' (' + item.description + ')'" optionValue="id" class="w-full" filter />
       </div>
       <div class="flex justify-end">
-        <Button label="Save" @click="settingsDialogVisible = false" />
+        <Button label="Save" icon="pi pi-save" @click="settingsDialogVisible = false" />
       </div>
     </div>
   </Dialog>
