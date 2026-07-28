@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Vessel",
+    "slug": "vessel",
+    "scheme": "vessel",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/background.jpg",
+      "resizeMode": "cover",
+      "backgroundColor": "#12121a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vessel.app"
+    },
+    "android": {
+      "package": "com.vessel.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

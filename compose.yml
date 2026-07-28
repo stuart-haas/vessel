@@ -1,36 +1,15 @@
 services:
-  client:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: client
-    volumes:
-      - ./client:/app
-    ports:
-      - 5173:5173
-    depends_on:
-      - server
   server:
     build:
-      context: .
-      dockerfile: Dockerfile
-      target: server
-    volumes:
-      - ./server:/app
-    ports:
-      - 0:3000
-    depends_on:
-      - redis
-      - db
-  db:
-    image: postgres:16
+      context: ./server
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: vessel
-  redis:  
-    image: redis:6.2
-    command:
-      - /bin/sh
-      - -c 
-      - redis-server
+      VESSEL_CORS_ORIGINS: "*"
+      # Persist the SQLite DB on a named volume.
+      VESSEL_DATABASE_URL: "sqlite:////data/vessel.db"
+    volumes:
+      - server_data:/data
+    ports:
+      - "3000:3000"
+
+volumes:
+  server_data:
