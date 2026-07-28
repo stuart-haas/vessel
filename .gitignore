@@ -1,2 +1,7 @@
-dist
 node_modules
+dist
+.venv
+__pycache__
+*.db
+.env
+.DS_Store
