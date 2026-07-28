@@ -46,9 +46,9 @@ into a fully-typed client and TanStack Query options with
 [`@hey-api/openapi-ts`](https://heyapi.dev):
 
 ```bash
-# from the repo root (exports server/openapi.json first, then generates):
-make codegen
-# or, if server/openapi.json is already up to date:
+# 1. refresh the schema (from ../server, needs uv):
+#    uv run python scripts/export_openapi.py openapi.json
+# 2. regenerate the client from ../server/openapi.json:
 npm run codegen
 ```
 
