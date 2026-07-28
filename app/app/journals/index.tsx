@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,46 +12,30 @@ import {
   View,
 } from 'react-native';
 
-import { api, type Journal } from '@/api';
+import { listJournalsOptions } from '@/client/@tanstack/react-query.gen';
+import { errorMessage } from '@/errors';
 import { colors, radius, spacing } from '@/theme';
 
-function snippet(content: string): string {
-  return content.replace(/\s+/g, ' ').trim().slice(0, 120);
+function snippet(content: string | undefined): string {
+  return (content ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
 }
 
 export default function JournalsList() {
   const router = useRouter();
-  const [journals, setJournals] = useState<Journal[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(async () => {
-    try {
-      setError(null);
-      setJournals(await api.listJournals());
-    } catch (err: any) {
-      setError(String(err.message ?? err));
-    }
-  }, []);
+  const { data: journals, error, isFetching, refetch } = useQuery(listJournalsOptions());
 
   // Reload whenever the screen regains focus (e.g. after saving an entry).
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load]),
+      refetch();
+    }, [refetch]),
   );
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await load();
-    setRefreshing(false);
-  }, [load]);
 
   return (
     <View style={styles.container}>
       {error ? (
         <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
+          <Text style={styles.error}>{errorMessage(error)}</Text>
           <Text style={styles.hint}>Make sure the Vessel API is running.</Text>
         </View>
       ) : !journals ? (
@@ -62,7 +47,7 @@ export default function JournalsList() {
           data={journals}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} />}
           ListEmptyComponent={
             <View style={styles.center}>
               <Ionicons name="leaf-outline" size={40} color={colors.textMuted} />

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { api } from '@/api';
+import { getVerseOptions } from '@/client/@tanstack/react-query.gen';
+import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';
 import { colors, radius, spacing } from '@/theme';
 
@@ -10,51 +11,29 @@ const DEFAULT_VERSE_ID = 'JHN.3.16';
 
 export default function Read() {
   const { bibleId } = useSettings();
-  const [state, setState] = useState<{
-    loading: boolean;
-    error?: string;
-    reference?: string;
-    content?: string;
-  }>({ loading: true });
+  const { data, error, isLoading } = useQuery(
+    getVerseOptions({ path: { bible_id: bibleId, verse_id: DEFAULT_VERSE_ID } }),
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    setState({ loading: true });
-    api
-      .getVerse(bibleId, DEFAULT_VERSE_ID)
-      .then((data) => {
-        if (cancelled) return;
-        setState({
-          loading: false,
-          reference: data.reference,
-          // The API returns HTML-ish content; strip tags for a clean read.
-          content: (data.content ?? '').replace(/<[^>]+>/g, '').trim(),
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setState({ loading: false, error: String(err.message ?? err) });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [bibleId]);
+  // The API returns HTML-ish content; strip tags for a clean read.
+  const content = (data?.content ?? '').replace(/<[^>]+>/g, '').trim();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {state.loading ? (
+      {isLoading ? (
         <ActivityIndicator size="large" color={colors.primary} />
-      ) : state.error ? (
+      ) : error ? (
         <View style={styles.card}>
           <Text style={styles.errorTitle}>Couldn’t load today’s verse</Text>
-          <Text style={styles.errorText}>{state.error}</Text>
+          <Text style={styles.errorText}>{errorMessage(error)}</Text>
           <Text style={styles.hint}>
             Make sure the Vessel API is running and reachable.
           </Text>
         </View>
       ) : (
         <View style={styles.card}>
-          <Text style={styles.reference}>{state.reference}</Text>
-          <Text style={styles.verse}>{state.content}</Text>
+          <Text style={styles.reference}>{data?.reference}</Text>
+          <Text style={styles.verse}>{content}</Text>
         </View>
       )}
     </ScrollView>

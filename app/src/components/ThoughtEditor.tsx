@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { api, type Tag, type VerseHit } from '@/api';
+import { listTags, searchVerses, type Tag, type VerseHit } from '@/client';
 import { colors, radius, spacing } from '@/theme';
 import {
   filterCommands,
@@ -68,7 +68,12 @@ export default function ThoughtEditor({
       const seq = ++searchSeq.current;
       setLoading(true);
       try {
-        const hits = await api.searchVerses(bibleId, tok.query);
+        const { data } = await searchVerses({
+          path: { bible_id: bibleId },
+          query: { query: tok.query, limit: 8 },
+          throwOnError: true,
+        });
+        const hits = data ?? [];
         if (seq !== searchSeq.current) return; // a newer search superseded this one
         setSuggestions(
           hits.map((h: VerseHit) => ({
@@ -91,7 +96,8 @@ export default function ThoughtEditor({
   const loadTags = useCallback(async (tok: ActiveToken) => {
     if (!tagsCache.current) {
       try {
-        tagsCache.current = await api.listTags();
+        const { data } = await listTags({ throwOnError: true });
+        tagsCache.current = data ?? [];
       } catch {
         tagsCache.current = [];
       }

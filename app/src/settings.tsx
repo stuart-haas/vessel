@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { api } from './api';
+import { config as fetchConfig } from './client';
 
 const STORAGE_KEY = 'vessel.selectedBibleId';
 const FALLBACK_BIBLE_ID = 'de4e12af7f2817c0-01';
@@ -26,8 +26,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           setBibleIdState(stored);
         } else {
           // First launch: seed from the server's default.
-          const config = await api.getConfig().catch(() => null);
-          if (config?.default_bible_id) setBibleIdState(config.default_bible_id);
+          const res = await fetchConfig().catch(() => null);
+          if (res?.data?.default_bible_id) setBibleIdState(res.data.default_bible_id);
         }
       } finally {
         setReady(true);

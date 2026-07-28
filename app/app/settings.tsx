@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -10,22 +11,15 @@ import {
   View,
 } from 'react-native';
 
-import { api, type Bible } from '@/api';
+import { listBiblesOptions } from '@/client/@tanstack/react-query.gen';
+import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';
 import { colors, radius, spacing } from '@/theme';
 
 export default function Settings() {
   const { bibleId, setBibleId } = useSettings();
-  const [bibles, setBibles] = useState<Bible[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
-
-  useEffect(() => {
-    api
-      .listBibles()
-      .then(setBibles)
-      .catch((err) => setError(String(err.message ?? err)));
-  }, []);
+  const { data: bibles, error } = useQuery(listBiblesOptions());
 
   const filtered = useMemo(() => {
     if (!bibles) return [];
@@ -44,7 +38,7 @@ export default function Settings() {
       <Text style={styles.sectionLabel}>Bible Version</Text>
 
       {error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Text style={styles.error}>{errorMessage(error)}</Text>
       ) : !bibles ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.lg }} />
       ) : (

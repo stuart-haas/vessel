@@ -6,15 +6,28 @@ journal entries to SQLite via [SQLModel](https://sqlmodel.tiangolo.com/).
 
 ## Run locally
 
+Dependencies are managed with [uv](https://docs.astral.sh/uv/).
+
 ```bash
 cd server
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env          # optional: customize config
-uvicorn app.main:app --reload --port 3000
+uv sync                        # create .venv and install from uv.lock
+cp .env.example .env           # optional: customize config
+uv run uvicorn app.main:app --reload --port 3000
 ```
 
 Interactive docs: http://localhost:3000/docs
+
+## OpenAPI / client generation
+
+The schema is available live at `/openapi.json`, or export it to a file for the
+app's code generator:
+
+```bash
+uv run python scripts/export_openapi.py openapi.json
+```
+
+`server/openapi.json` is the source of truth for the app's typed TanStack Query
+client (see [`../app`](../app)). Regenerate it whenever the API changes.
 
 ## Endpoints
 

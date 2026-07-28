@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -14,8 +15,16 @@ import {
   View,
 } from 'react-native';
 
-import { api } from '@/api';
+import {
+  createJournalMutation,
+  deleteJournalMutation,
+  getJournalOptions,
+  listJournalsQueryKey,
+  listTagsQueryKey,
+  updateJournalMutation,
+} from '@/client/@tanstack/react-query.gen';
 import ThoughtEditor from '@/components/ThoughtEditor';
+import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';
 import { colors, radius, spacing } from '@/theme';
 
@@ -25,66 +34,80 @@ function today(): string {
 
 export default function JournalEditor() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { bibleId } = useSettings();
   const isNew = id === 'new';
-  const journalId = isNew ? null : Number(id);
+  const journalId = isNew ? 0 : Number(id);
 
   const [title, setTitle] = useState('');
   const [entryDate, setEntryDate] = useState(today());
   const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
+
+  const { data: loaded, isLoading, error } = useQuery({
+    ...getJournalOptions({ path: { journal_id: journalId } }),
+    enabled: !isNew,
+  });
+
+  // Seed the editable form once the entry loads.
+  useEffect(() => {
+    if (loaded) {
+      setTitle(loaded.title ?? '');
+      setEntryDate(loaded.entry_date || today());
+      setContent(loaded.content ?? '');
+    }
+  }, [loaded]);
 
   useEffect(() => {
-    if (isNew || journalId == null) return;
-    let cancelled = false;
-    api
-      .getJournal(journalId)
-      .then((j) => {
-        if (cancelled) return;
-        setTitle(j.title);
-        setEntryDate(j.entry_date || today());
-        setContent(j.content);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setLoading(false);
-        notify('Error', String(err.message ?? err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isNew, journalId]);
+    if (error) notify('Error', errorMessage(error));
+  }, [error]);
 
-  const save = async () => {
-    setSaving(true);
-    try {
-      const payload = { title, entry_date: entryDate, content };
-      if (isNew) {
-        await api.createJournal(payload);
-      } else if (journalId != null) {
-        await api.updateJournal(journalId, payload);
-      }
+  const invalidateLists = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: listJournalsQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: listTagsQueryKey() }),
+    ]);
+
+  const createMut = useMutation({
+    ...createJournalMutation(),
+    onSuccess: async () => {
+      await invalidateLists();
       router.back();
-    } catch (err: any) {
-      notify('Could not save', String(err.message ?? err));
-    } finally {
-      setSaving(false);
+    },
+    onError: (err) => notify('Could not save', errorMessage(err)),
+  });
+
+  const updateMut = useMutation({
+    ...updateJournalMutation(),
+    onSuccess: async () => {
+      await invalidateLists();
+      router.back();
+    },
+    onError: (err) => notify('Could not save', errorMessage(err)),
+  });
+
+  const deleteMut = useMutation({
+    ...deleteJournalMutation(),
+    onSuccess: async () => {
+      await invalidateLists();
+      router.back();
+    },
+    onError: (err) => notify('Could not delete', errorMessage(err)),
+  });
+
+  const saving = createMut.isPending || updateMut.isPending;
+
+  const save = () => {
+    const body = { title, entry_date: entryDate, content };
+    if (isNew) {
+      createMut.mutate({ body });
+    } else {
+      updateMut.mutate({ path: { journal_id: journalId }, body });
     }
   };
 
   const confirmDelete = () => {
-    if (journalId == null) return;
-    const doDelete = async () => {
-      try {
-        await api.deleteJournal(journalId);
-        router.back();
-      } catch (err: any) {
-        notify('Could not delete', String(err.message ?? err));
-      }
-    };
+    const doDelete = () => deleteMut.mutate({ path: { journal_id: journalId } });
     if (Platform.OS === 'web') {
       if (window.confirm('Delete this entry?')) doDelete();
     } else {
@@ -95,7 +118,7 @@ export default function JournalEditor() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -156,9 +179,12 @@ export default function JournalEditor() {
           <Pressable
             style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
             onPress={confirmDelete}
+            disabled={deleteMut.isPending}
           >
             <Ionicons name="trash-outline" size={18} color={colors.danger} />
-            <Text style={styles.deleteLabel}>Delete entry</Text>
+            <Text style={styles.deleteLabel}>
+              {deleteMut.isPending ? 'Deleting…' : 'Delete entry'}
+            </Text>
           </Pressable>
         )}
       </ScrollView>

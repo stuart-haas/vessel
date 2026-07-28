@@ -21,20 +21,49 @@ device, set `EXPO_PUBLIC_API_URL` to your computer's LAN IP.
 ```
 app/
 ├── app/                     # Expo Router screens (file-based routing)
-│   ├── _layout.tsx          # Root stack + providers
+│   ├── _layout.tsx          # Root stack + providers (incl. React Query)
 │   ├── index.tsx            # Home
 │   ├── read.tsx             # Verse reader
 │   ├── settings.tsx         # Bible version picker
 │   └── journals/
 │       ├── index.tsx        # Entry list
 │       └── [id].tsx         # Editor (id = "new" or an entry id)
+├── openapi-ts.config.ts     # hey-api codegen config
 └── src/
-    ├── api.ts               # Typed backend client
+    ├── client/              # GENERATED — typed client + TanStack Query options
+    ├── api.ts               # Runtime config (base URL) for the generated client
+    ├── errors.ts            # Error → message helper
     ├── settings.tsx         # Selected-Bible context (persisted)
     ├── theme.ts             # Colors / spacing tokens
     ├── editor/tokens.ts     # @ / # / trigger parsing + commands
     └── components/ThoughtEditor.tsx
 ```
+
+## Data layer (generated)
+
+The app never hand-writes fetch calls. The backend's OpenAPI schema is compiled
+into a fully-typed client and TanStack Query options with
+[`@hey-api/openapi-ts`](https://heyapi.dev):
+
+```bash
+# from the repo root (exports server/openapi.json first, then generates):
+make codegen
+# or, if server/openapi.json is already up to date:
+npm run codegen
+```
+
+Screens then consume the generated options directly:
+
+```ts
+import { useQuery } from '@tanstack/react-query';
+import { listJournalsOptions } from '@/client/@tanstack/react-query.gen';
+
+const { data, error } = useQuery(listJournalsOptions());
+```
+
+`src/client/` is committed so the app builds without running codegen, but
+regenerate it whenever the API changes. The base URL is injected at runtime by
+`createClientConfig` in [`src/api.ts`](./src/api.ts).
 
 ## The Thought editor
 

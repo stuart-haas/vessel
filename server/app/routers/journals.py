@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models import Journal, JournalCreate, JournalRead, JournalUpdate
+from app.schemas import Tag
 
 router = APIRouter(prefix="/journals", tags=["journals"])
 
@@ -28,7 +29,7 @@ def create_journal(payload: JournalCreate, session: Session = Depends(get_sessio
     return journal
 
 
-@router.get("/tags")
+@router.get("/tags", response_model=list[Tag])
 def list_tags(session: Session = Depends(get_session)):
     """Distinct #idea tags across all entries, powering the `#` autocomplete."""
     counts: Counter[str] = Counter()

@@ -12,13 +12,12 @@ This repository is a monorepo:
 
 ## Quick start
 
-**1. Backend**
+**1. Backend** (managed with [uv](https://docs.astral.sh/uv/))
 
 ```bash
 cd server
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 3000
+uv sync
+uv run uvicorn app.main:app --reload --port 3000
 ```
 
 **2. App** (in a second terminal)
@@ -49,6 +48,17 @@ make build && make up
   - `/` runs quick commands.
   Entries are persisted by the backend.
 - **Settings** — choose your Bible translation (persisted on-device).
+
+## Typed end-to-end
+
+The app's data layer is generated from the backend's OpenAPI schema with
+[`@hey-api/openapi-ts`](https://heyapi.dev), producing a fully-typed client and
+[TanStack Query](https://tanstack.com/query) hooks. Regenerate after changing the
+API:
+
+```bash
+make codegen        # exports server/openapi.json, then regenerates app/src/client
+```
 
 See [`app/README.md`](./app/README.md) and [`server/README.md`](./server/README.md)
 for details.
