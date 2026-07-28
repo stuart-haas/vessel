@@ -16,13 +16,13 @@ contract:
 
 | Path                  | Stack                                         | Runs on           |
 | --------------------- | --------------------------------------------- | ----------------- |
-| [`app/`](./app)       | Expo · React Native · Expo Router · TanStack Query | Web, iOS, Android |
+| [`client/`](./client) | Expo · React Native · Expo Router · TanStack Query | Web, iOS, Android |
 | [`server/`](./server) | FastAPI · SQLModel (SQLite) · managed by `uv` | Python 3.11+      |
 
 The app never hand-writes HTTP calls. The backend's OpenAPI schema
 (`server/openapi.json`) is compiled by [`@hey-api/openapi-ts`](https://heyapi.dev)
 into a typed client and [TanStack Query](https://tanstack.com/query) hooks under
-`app/src/client/`. Change the API in one place and the client types follow.
+`client/src/api/client/`. Change the API in one place and the client types follow.
 
 ## Features / status
 
@@ -80,7 +80,7 @@ uv run uvicorn app.main:app --reload --port 3000
 In a second terminal:
 
 ```bash
-cd app
+cd client
 npm install
 cp .env.example .env                     # point EXPO_PUBLIC_API_URL at the backend
 npm run web                              # or: npm run ios / npm run android
@@ -105,26 +105,30 @@ Whenever the API changes, refresh the schema and regenerate the client:
 # 1. export the schema from the backend (in server/)
 cd server && uv run python scripts/export_openapi.py openapi.json
 
-# 2. regenerate the typed client + query hooks (in app/)
-cd ../app && npm run codegen
+# 2. regenerate the typed client + query hooks (in client/)
+cd ../client && npm run codegen
 ```
 
-`app/src/client/` is committed so the app builds without running codegen, but it
-is generated — never edit it by hand.
+`client/src/api/client/` is committed so the app builds without running codegen,
+but it is generated — never edit it by hand.
 
 ## Project structure
 
 ```
 vessel/
-├── app/                      # Expo React Native app
-│   ├── app/                  # Expo Router screens (index, read, settings, journals/…)
+├── client/                     # Expo React Native app
 │   ├── src/
-│   │   ├── client/           # GENERATED typed client + TanStack Query options
-│   │   ├── api.ts            # Runtime base URL for the client
-│   │   ├── editor/tokens.ts  # @ / # / trigger parsing + slash commands
-│   │   └── components/       # ThoughtEditor, …
-│   └── openapi-ts.config.ts  # codegen config
-├── server/                   # FastAPI backend
+│   │   ├── app/                # Expo Router screens (index, read, settings, journals/…)
+│   │   ├── api/
+│   │   │   ├── client/         # GENERATED typed client + TanStack Query options
+│   │   │   └── config.ts       # runtime base URL for the client
+│   │   ├── editor/tokens.ts    # @ / # / trigger parsing + slash commands
+│   │   ├── components/         # ThoughtEditor, …
+│   │   ├── theme.ts
+│   │   └── settings.tsx        # selected-Bible context (persisted)
+│   ├── assets/
+│   └── openapi-ts.config.ts    # codegen config
+├── server/                     # FastAPI backend
 │   ├── app/
 │   │   ├── main.py           # app wiring, CORS, operationId naming
 │   │   ├── routers/          # bible + journals endpoints
@@ -166,4 +170,4 @@ vessel/
 
 Development conventions and engineering principles live in
 [`CLAUDE.md`](./CLAUDE.md). Per-package details are in
-[`app/README.md`](./app/README.md) and [`server/README.md`](./server/README.md).
+[`client/README.md`](./client/README.md) and [`server/README.md`](./server/README.md).

@@ -42,7 +42,7 @@ export default function Home() {
 
   return (
     <ImageBackground
-      source={require('../assets/images/background.jpg')}
+      source={require('../../assets/images/background.jpg')}
       style={styles.bg}
       resizeMode="cover"
     >

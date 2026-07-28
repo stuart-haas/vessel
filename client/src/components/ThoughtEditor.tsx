@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { listTags, searchVerses, type Tag, type VerseHit } from '@/client';
+import { listTags, searchVerses, type Tag, type VerseHit } from '@/api/client';
 import { colors, radius, spacing } from '@/theme';
 import {
   filterCommands,
