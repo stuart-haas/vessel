@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { getVerseOptions } from '@/client/@tanstack/react-query.gen';
+import { getVerseOptions } from '@/api/client/@tanstack/react-query.gen';
 import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';
 import { colors, radius, spacing } from '@/theme';

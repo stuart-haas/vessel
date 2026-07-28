@@ -22,7 +22,7 @@ import {
   listJournalsQueryKey,
   listTagsQueryKey,
   updateJournalMutation,
-} from '@/client/@tanstack/react-query.gen';
+} from '@/api/client/@tanstack/react-query.gen';
 import ThoughtEditor from '@/components/ThoughtEditor';
 import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';

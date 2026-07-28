@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { listJournalsOptions } from '@/client/@tanstack/react-query.gen';
+import { listJournalsOptions } from '@/api/client/@tanstack/react-query.gen';
 import { errorMessage } from '@/errors';
 import { colors, radius, spacing } from '@/theme';
 

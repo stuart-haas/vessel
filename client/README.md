@@ -7,7 +7,7 @@ The Vessel client, built with [Expo](https://expo.dev) and
 ## Run locally
 
 ```bash
-cd app
+cd client
 npm install
 cp .env.example .env          # point EXPO_PUBLIC_API_URL at your backend
 npm run web                   # or: npm run ios / npm run android
@@ -18,25 +18,30 @@ device, set `EXPO_PUBLIC_API_URL` to your computer's LAN IP.
 
 ## Structure
 
+Everything lives under a single `src/` root; Expo Router uses `src/app/` for
+routes.
+
 ```
-app/
-├── app/                     # Expo Router screens (file-based routing)
-│   ├── _layout.tsx          # Root stack + providers (incl. React Query)
-│   ├── index.tsx            # Home
-│   ├── read.tsx             # Verse reader
-│   ├── settings.tsx         # Bible version picker
-│   └── journals/
-│       ├── index.tsx        # Entry list
-│       └── [id].tsx         # Editor (id = "new" or an entry id)
-├── openapi-ts.config.ts     # hey-api codegen config
-└── src/
-    ├── client/              # GENERATED — typed client + TanStack Query options
-    ├── api.ts               # Runtime config (base URL) for the generated client
-    ├── errors.ts            # Error → message helper
-    ├── settings.tsx         # Selected-Bible context (persisted)
-    ├── theme.ts             # Colors / spacing tokens
-    ├── editor/tokens.ts     # @ / # / trigger parsing + commands
-    └── components/ThoughtEditor.tsx
+client/
+├── src/
+│   ├── app/                    # Expo Router screens (file-based routing)
+│   │   ├── _layout.tsx         # Root stack + providers (incl. React Query)
+│   │   ├── index.tsx           # Home
+│   │   ├── read.tsx            # Verse reader
+│   │   ├── settings.tsx        # Bible version picker
+│   │   └── journals/
+│   │       ├── index.tsx       # Entry list
+│   │       └── [id].tsx        # Editor (id = "new" or an entry id)
+│   ├── api/
+│   │   ├── client/             # GENERATED — typed client + TanStack Query options
+│   │   └── config.ts           # Runtime config (base URL) for the generated client
+│   ├── errors.ts               # Error → message helper
+│   ├── settings.tsx            # Selected-Bible context (persisted)
+│   ├── theme.ts                # Colors / spacing tokens
+│   ├── editor/tokens.ts        # @ / # / trigger parsing + commands
+│   └── components/ThoughtEditor.tsx
+├── assets/
+└── openapi-ts.config.ts        # hey-api codegen config
 ```
 
 ## Data layer (generated)
@@ -56,14 +61,14 @@ Screens then consume the generated options directly:
 
 ```ts
 import { useQuery } from '@tanstack/react-query';
-import { listJournalsOptions } from '@/client/@tanstack/react-query.gen';
+import { listJournalsOptions } from '@/api/client/@tanstack/react-query.gen';
 
 const { data, error } = useQuery(listJournalsOptions());
 ```
 
-`src/client/` is committed so the app builds without running codegen, but
+`src/api/client/` is committed so the app builds without running codegen, but
 regenerate it whenever the API changes. The base URL is injected at runtime by
-`createClientConfig` in [`src/api.ts`](./src/api.ts).
+`createClientConfig` in [`src/api/config.ts`](./src/api/config.ts).
 
 ## The Thought editor
 

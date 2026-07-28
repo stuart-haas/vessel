@@ -27,7 +27,7 @@ uv run python scripts/export_openapi.py openapi.json
 ```
 
 `server/openapi.json` is the source of truth for the app's typed TanStack Query
-client (see [`../app`](../app)). Regenerate it whenever the API changes.
+client (see [`../client`](../client)). Regenerate it whenever the API changes.
 
 ## Endpoints
 

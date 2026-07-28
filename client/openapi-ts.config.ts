@@ -8,14 +8,14 @@ import { defineConfig } from '@hey-api/openapi-ts';
 export default defineConfig({
   input: '../server/openapi.json',
   output: {
-    path: 'src/client',
+    path: 'src/api/client',
     postProcess: ['prettier'],
   },
   plugins: [
     {
       name: '@hey-api/client-fetch',
-      // Base URL is set at runtime in src/api.ts; leave it unset here.
-      runtimeConfigPath: './src/api',
+      // Base URL is set at runtime in src/api/config.ts; leave it unset here.
+      runtimeConfigPath: './src/api/config',
     },
     '@hey-api/schemas',
     '@tanstack/react-query',

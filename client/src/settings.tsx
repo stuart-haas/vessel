@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { config as fetchConfig } from './client';
+import { config as fetchConfig } from './api/client';
 
 const STORAGE_KEY = 'vessel.selectedBibleId';
 const FALLBACK_BIBLE_ID = 'de4e12af7f2817c0-01';

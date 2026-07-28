@@ -8,7 +8,7 @@ Vessel is an app for connecting your thoughts with biblical scripture —
 encouraging children of God to spend time in His presence daily. It is a
 monorepo:
 
-- `app/` — Expo + React Native + Expo Router client (web, iOS, Android).
+- `client/` — Expo + React Native + Expo Router app (web, iOS, Android).
 - `server/` — FastAPI + SQLModel (SQLite) backend, dependencies managed by `uv`.
 
 The client never hand-writes HTTP calls: the backend's OpenAPI schema is
@@ -19,11 +19,12 @@ together — respect it.**
 ## Repository map
 
 ```
-app/
-  app/                    Expo Router screens (file-based routing)
+client/
   src/
-    client/               GENERATED — do not hand-edit
-    api.ts                Runtime base URL for the generated client
+    app/                  Expo Router screens (file-based routing)
+    api/
+      client/             GENERATED — do not hand-edit
+      config.ts           Runtime base URL for the generated client
     editor/tokens.ts      @ / # / trigger parsing for the journal editor
     components/           Shared UI (ThoughtEditor, …)
   openapi-ts.config.ts    Codegen config
@@ -48,12 +49,12 @@ uv run uvicorn app.main:app --reload --port 3000
 uv run python scripts/export_openapi.py openapi.json   # refresh the schema
 ```
 
-App (`app/`):
+App (`client/`):
 
 ```bash
 npm install
 npm run web            # or: npm run ios / npm run android
-npm run codegen        # regenerate src/client from ../server/openapi.json
+npm run codegen        # regenerate src/api/client from ../server/openapi.json
 npm run typecheck      # tsc --noEmit
 ```
 
@@ -65,24 +66,24 @@ When you touch a route, its params, or a response model:
 
 1. Update the FastAPI route and its `schemas.py` response model.
 2. `uv run python scripts/export_openapi.py openapi.json` (regenerates the schema).
-3. `cd ../app && npm run codegen` (regenerates the typed client).
+3. `cd ../client && npm run codegen` (regenerates the typed client).
 4. `npm run typecheck` — the compiler will point you at every call site that
    needs updating.
 
-Never edit `app/src/client/**` by hand — it is overwritten on every codegen run.
+Never edit `client/src/api/client/**` by hand — it is overwritten on every codegen run.
 Keep endpoint response models in `schemas.py`; loosely-typed dict returns produce
 `unknown` in the client and defeat the purpose.
 
 ## Conventions
 
-- **Backend**: one router per resource under `app/routers/`. Every endpoint
+- **Backend**: one router per resource under `server/app/routers/`. Every endpoint
   declares a `response_model`. `operationId` is the Python function name (via
   `generate_unique_id_function`), which becomes the generated method name — so
   name endpoint functions like you'd want the client method to read
   (`list_journals` → `listJournals`).
 - **App**: screens consume generated `*Options` / `*Mutation` from
-  `@/client/@tanstack/react-query.gen`. Invalidate the relevant query keys after
-  a mutation. Base URL comes from `EXPO_PUBLIC_API_URL`.
+  `@/api/client/@tanstack/react-query.gen`. Invalidate the relevant query keys
+  after a mutation. Base URL comes from `EXPO_PUBLIC_API_URL`.
 - **Cross-platform first**: everything must run on web, iOS, and Android. Reach
   for React Native primitives before native modules; if a feature needs a native
   module, that is a deliberate decision, not a default.
@@ -137,4 +138,4 @@ house style here — apply them to every change.
   (`VESSEL_BIBLE_API_KEY`). Journal features are SQLite-backed and work offline.
 - Physical devices can't reach `localhost` — set `EXPO_PUBLIC_API_URL` to your
   machine's LAN IP.
-- `server/*.db` and `app/dist` are build artifacts; never commit them.
+- `server/*.db` and `client/dist` are build artifacts; never commit them.

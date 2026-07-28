@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { listBiblesOptions } from '@/client/@tanstack/react-query.gen';
+import { listBiblesOptions } from '@/api/client/@tanstack/react-query.gen';
 import { errorMessage } from '@/errors';
 import { useSettings } from '@/settings';
 import { colors, radius, spacing } from '@/theme';
